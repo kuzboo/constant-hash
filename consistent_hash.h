@@ -36,9 +36,8 @@ public:
 
     hash_type get_max_port() { return cur_max_port; }
 
-private:
     string m_ip;
-    hash_type m_virtual_node_num; //虚拟节点数目
+    hash_type m_virtual_node_num; //虚拟节gi点数目
     hash_type cur_max_port;       //端口号 对应虚拟结点
     vector<hash_type> virtual_node_hash_list;
 };
