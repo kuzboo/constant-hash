@@ -108,15 +108,15 @@ void Consistent_Hash::add_real_node(string& ip,hash_type virtual_node_num)
         while (m_virtual_node_map.find(vir_hash)!=m_virtual_node_map.end()); 
 
         cur_vir_node_num++;
-        // m_virtual_node_map[vir_hash] = Virtual_Node(vir_ip, vir_hash); //添加到虚拟节点集合中;
+        // m_virtual_node_map[vir_hash] = Virtual_Node(vir_ip, vir_hash); //添加到虚拟节点集合中
         // m_hash_vec.push_back(vir_hash);                                //添加到总的集合中;
-        //【这样子会内存爆炸】
+        //【这样子会内存爆炸】？？？？
         Virtual_Node *vir_node = new Virtual_Node(vir_ip, vir_hash); //new一个新的虚拟节点
         m_virtual_node_map[vir_hash] = *vir_node;                    //添加到总的虚拟节点集合中
         m_hash_vec.push_back(vir_hash);                              //添加到数组中
         sort(m_hash_vec.begin(), m_hash_vec.end());                  //从小到大排序
 
-        /* 建立一个新的虚拟节点 需要进行数据迁移 */
+        /* ---------------建立一个新的虚拟节点 需要进行数据迁移------------------ */
         hash_type id = find_nearest_node(vir_hash);//找到虚拟节点的最近结点
         hash_type next_id = id + 1;                //下一个结点
         if (next_id >= m_hash_vec.size())
@@ -148,13 +148,85 @@ void Consistent_Hash::add_real_node(string& ip,hash_type virtual_node_num)
                  << "(" << vir_hash << ")" << endl;
         }
     }
-    real_node->cur_max_port = cur_port;
-    real_node->m_virtual_node_num += cur_vir_node_num;//当前真实结点的虚拟节点数目
-    m_real_node_map[ip] = *real_node;//添加到真实结点集合中
-
-    m_virtual_node_sum += cur_vir_node_num;//总的虚拟节点数目
+    real_node->cur_max_port = cur_port;                //更新端口最大端口号
+    real_node->m_virtual_node_num += cur_vir_node_num; //当前真实结点的虚拟节点数目
+    m_real_node_map[ip] = *real_node;                  //添加到真实结点集合中
+    m_virtual_node_sum += cur_vir_node_num;            //总的虚拟节点数目
 
     cout << "[add real node finished]" << ip << endl;
+}
+
+void Consistent_Hash::drop_real_node(string &ip)
+{
+    cout << "[drop real node] " << ip << endl;
+    
+    //当前真实节点的虚拟结点数组
+    vector<hash_type> vir_node = m_real_node_map[ip].virtual_node_hash_list;
+    sort(vir_node.begin(), vir_node.end());
+    
+    hash_type next_id;
+    hash_type next_hash;
+    hash_type cur_id;
+    hash_type cur_hash;
+
+    vector<hash_type> tobe_delete;
+    //遍历虚拟节点数组
+    int size = vir_node.size();
+    for (int i = size - 1; i >= 0; --i)
+    {
+        cur_hash = vir_node[i];
+        tobe_delete.push_back(cur_hash);
+
+        //如果这个虚拟节点有关联资源
+        if(m_virtual_node_map[cur_hash].m_data.size()>0)
+        {
+            //找到这个虚拟结点最近的结点索引
+            cur_id = find_nearest_node(cur_hash);
+            next_id = cur_id;
+            //下一个真实结点ip
+            string next_realnode_ip;
+            do
+            {
+                next_id++;
+                if(next_id>=m_hash_vec.size())
+                {
+                    next_id = 0;
+                }
+                next_hash = m_hash_vec[next_id];
+                next_realnode_ip = m_virtual_node_map[next_hash].m_ip;
+            } while (next_realnode_ip.find(ip) != -1);//【？？？？？？】
+
+            //下一个结点关联的资源
+            map<hash_type, string> *moveto = &(m_virtual_node_map[next_hash].m_data);
+            
+            //遍历当前虚拟节点关联的资源
+            for (auto &data :m_virtual_node_map[cur_hash].m_data)
+            {
+                (*moveto)[data.first] = data.second;
+                cout << "[move data] " << data.second << " from node: " << m_virtual_node_map[cur_hash].m_ip
+                     << "(" << cur_hash << ") " << " to"
+                     << m_virtual_node_map[next_hash].m_ip << "(" << next_hash << ")" << endl;
+            }
+        }
+    }
+
+    for(auto hash:tobe_delete)
+    {
+        m_virtual_node_map.erase(cur_hash);
+        m_virtual_node_sum--;
+
+        auto it = find(m_hash_vec.begin(), m_hash_vec.end(), hash);
+        if(it!=m_hash_vec.end())
+        {
+            m_hash_vec.erase(it);
+        }
+    }
+    sort(m_hash_vec.begin(), m_hash_vec.end());
+    m_real_node_map[ip].virtual_node_hash_list.clear();
+    m_real_node_map.erase(ip);
+    m_real_node_sum--;
+
+    cout << "[drop real node finished] " << ip << endl;
 }
 
 /*定位资源，请求的资源*/
