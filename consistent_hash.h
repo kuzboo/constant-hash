@@ -60,7 +60,7 @@ public:
     hash_type put(string data_id);
 
     //添加真实结点
-    void add_real_node(string &ip, hash_type virtual_node_num);
+    void add_real_node(string ip, hash_type virtual_node_num);
 
     //删除真实结点
     void drop_real_node(string ip);

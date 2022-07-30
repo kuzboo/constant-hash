@@ -71,7 +71,7 @@ hash_type Consistent_Hash::find_nearest_node(hash_type hash_value)
     return low;
 }
 
-void Consistent_Hash::add_real_node(string& ip,hash_type virtual_node_num)
+void Consistent_Hash::add_real_node(string ip,hash_type virtual_node_num)
 {
     cout << "[add real node:]" << ip << endl;
 
@@ -156,7 +156,7 @@ void Consistent_Hash::add_real_node(string& ip,hash_type virtual_node_num)
     cout << "[add real node finished]" << ip << endl;
 }
 
-void Consistent_Hash::drop_real_node(string &ip)
+void Consistent_Hash::drop_real_node(string ip)
 {
     cout << "[drop real node] " << ip << endl;
     
@@ -230,7 +230,7 @@ void Consistent_Hash::drop_real_node(string &ip)
 }
 
 /*定位资源，请求的资源*/
-hash_type Consistent_Hash::put(string data_name)
+hash_type Consistent_Hash::insert(string data_name)
 {
     //对资源进行第一次哈希映射
     hash_type data_hash = my_getMurMurHash(data_name.c_str(), HASH_LEN);
