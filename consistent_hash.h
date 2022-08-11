@@ -37,7 +37,7 @@ public:
     hash_type get_max_port() { return cur_max_port; }
 
     string m_ip;
-    hash_type m_virtual_node_num; //虚拟节gi点数目
+    hash_type m_virtual_node_num; //虚拟节点数目
     hash_type cur_max_port;       //端口号 对应虚拟结点
     vector<hash_type> virtual_node_hash_list;
 };
@@ -57,13 +57,17 @@ public:
     hash_type find_nearest_node(hash_type hash_value);
 
     //将资源定位到虚拟结点上
-    hash_type put(string data_id);
+    hash_type insert(string data_id);
 
     //添加真实结点
     void add_real_node(string ip, hash_type virtual_node_num);
 
     //删除真实结点
     void drop_real_node(string ip);
+
+    void print_real_node(string ip,int i);
+
+    void print();
 
 private:
     hash_type m_real_node_sum;    //所有实际结点数目

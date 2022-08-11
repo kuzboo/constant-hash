@@ -73,7 +73,7 @@ hash_type Consistent_Hash::find_nearest_node(hash_type hash_value)
 
 void Consistent_Hash::add_real_node(string ip,hash_type virtual_node_num)
 {
-    cout << "[add real node:]" << ip << endl;
+    cout << "[add real node]\t" << ip << endl;
 
     //定义一个真实结点
     Real_Node *real_node;
@@ -90,7 +90,7 @@ void Consistent_Hash::add_real_node(string ip,hash_type virtual_node_num)
         m_real_node_sum++;
     }
 
-    hash_type cur_port = real_node->cur_max_port;
+    hash_type cur_port = real_node->cur_max_port;//当前最大的端口号
     hash_type cur_vir_node_num = 0;
     hash_type vir_hash;
     string vir_ip;
@@ -147,7 +147,8 @@ void Consistent_Hash::add_real_node(string ip,hash_type virtual_node_num)
                  << "(" << next_hash << ") to" << m_virtual_node_map[vir_hash].m_ip
                  << "(" << vir_hash << ")" << endl;
         }
-    }
+        real_node->virtual_node_hash_list.push_back(vir_hash);
+        }
     real_node->cur_max_port = cur_port;                //更新端口最大端口号
     real_node->m_virtual_node_num += cur_vir_node_num; //当前真实结点的虚拟节点数目
     m_real_node_map[ip] = *real_node;                  //添加到真实结点集合中
@@ -232,6 +233,7 @@ void Consistent_Hash::drop_real_node(string ip)
 /*定位资源，请求的资源*/
 hash_type Consistent_Hash::insert(string data_name)
 {
+    cout << "[insert data]\t" << data_name << endl;
     //对资源进行第一次哈希映射
     hash_type data_hash = my_getMurMurHash(data_name.c_str(), HASH_LEN);
 
@@ -242,9 +244,40 @@ hash_type Consistent_Hash::insert(string data_name)
     //关联虚拟结点和资源
     m_virtual_node_map[nearest_hash].m_data.insert(make_pair(data_hash, data_name));
 
-    cout << "data: " << data_name << "(" << data_hash << ")\twas put on virtual node:"
+    cout << "data: " << data_name << "(" << data_hash << ")\twas insert on virtual node: "
          << m_virtual_node_map[nearest_hash].m_ip << "(" << nearest_hash << ")"
          << endl;
 
+    cout << "[insert data finished]" << data_name << endl;
     return nearest_hash;
+}
+
+void Consistent_Hash::print_real_node(string ip,int i)
+{
+    cout << "No."<<i<<" real node: " << ip << "\tvirtual_node_num=" << m_real_node_map[ip].m_virtual_node_num << endl;
+    for (auto tmp : m_real_node_map[ip].virtual_node_hash_list)
+    {
+        if(m_virtual_node_map[tmp].m_data.size()>0)
+        {
+            cout << "\tvirtual node\t" << m_virtual_node_map[tmp].m_ip << "(" << tmp << ")"
+                 << "\thas data";
+            for(auto data:m_virtual_node_map[tmp].m_data)
+            {
+                cout << "(" << data.second << "," << data.first << ")\t";
+            }
+            cout << endl;
+        }
+    }
+}
+
+void Consistent_Hash::print()
+{
+    cout << "print all node info:\t";
+    cout << "real node sum: " << m_real_node_sum << "\tvirtual node sum: " << m_virtual_node_sum << endl;
+    int i = 0;
+    for (auto tmp = m_real_node_map.begin(); tmp != m_real_node_map.end(); tmp++)
+    {
+        print_real_node(tmp->first,i);
+        i++;
+    }
 }
