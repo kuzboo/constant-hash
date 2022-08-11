@@ -15,6 +15,9 @@ int main()
     hash.insert("Python");
     hash.insert("C");
     hash.insert("Java");
+    hash.insert("China");
+    hash.insert("Tai wan sheng");
+    hash.insert("xiao ri ben");
     cout << "-------------------------print node-------------------------   " << endl;
     hash.print();
 }

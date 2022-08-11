@@ -38,6 +38,9 @@ unsigned int my_getMurMurHash(const void *key, int len)
     h ^= h >> 13;
     h *= m;
     h ^= h >> 15;
+    // unsigned int seed = 2 << len - 1;
+    // unsigned long ptr = (unsigned long)key;
+    // unsigned int h = ptr & (seed - 1);
     return h;
 }
 
