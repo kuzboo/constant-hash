@@ -8,7 +8,6 @@
 using namespace std;
 
 typedef unsigned int hash_type;
-
 class Virtual_Node
 {
 public:
